@@ -1,5 +1,6 @@
 import sys
 import random
+import pprint
 
 # Деталь
 class detail:
@@ -58,20 +59,20 @@ details = [
     detail(34, "Звезда", 31, 1),
     detail(35, "Спичка", 5, 1),
     detail(36, "Подшипник", 19, 20),
-    detail(37, "Транзистор", 20, ),
-    detail(38, "Динамик", 30),
-    detail(39, "Магнит", 34),
-    detail(40, "Проводник", 39),
-    detail(41, "Сирена", 96),
-    detail(42, "Скрепка", 78),
-    detail(43, "Шестерня", 127),
-    detail(44, "Колпачок", 149),
-    detail(45, "Трансформатор", 203),
-    detail(46, "Зарядное устройство", 459),
-    detail(47, "Пульт управления", 67),
-    detail(48, "Антенна", 206),
-    detail(49, "Светильник", 105),
-    detail(50, "Вентилятор", 200)
+    detail(37, "Транзистор", 20, 19),
+    detail(38, "Динамик", 30, 19),
+    detail(39, "Магнит", 34, 18),
+    detail(40, "Проводник", 39, 17),
+    detail(41, "Сирена", 96, 17),
+    detail(42, "Скрепка", 78, 16),
+    detail(43, "Шестерня", 127, 15),
+    detail(44, "Колпачок", 149, 15),
+    detail(45, "Трансформатор", 203, 14),
+    detail(46, "Зарядное устройство", 459, 13),
+    detail(47, "Пульт управления", 67, 13),
+    detail(48, "Антенна", 206, 12),
+    detail(49, "Светильник", 105, 11),
+    detail(50, "Вентилятор", 200, 11)
 ]
 
 providers = [
@@ -97,9 +98,85 @@ providers = [
     provider(20, "ГоризонтПроизводство")
 ]
 
+providers_details = [
+    ProvDet(1, 2),
+    ProvDet(2, 4),
+    ProvDet(2, 10),
+    ProvDet(3, 5),
+    ProvDet(4, 1),
+    ProvDet(5, 3),
+    ProvDet(5, 7),
+    ProvDet(5, 8),
+    ProvDet(6, 11),
+    ProvDet(7, 12),
+    ProvDet(8, 14),
+    ProvDet(9, 13),
+    ProvDet(9, 20),
+    ProvDet(9, 21),
+    ProvDet(9, 32),
+    ProvDet(10, 43),
+    ProvDet(11, 15),
+    ProvDet(12, 16),
+    ProvDet(12, 27),
+    ProvDet(13, 28),
+    ProvDet(13, 29),
+    ProvDet(14, 31),
+    ProvDet(15, 33),
+    ProvDet(16, 47),
+    ProvDet(17, 42),
+    ProvDet(18, 50),
+    ProvDet(19, 19),
+    ProvDet(19, 22),
+    ProvDet(19, 23),
+    ProvDet(20, 38)
+]
 
-details_on_p = [(d.name, d.price) for d in details if d.name.startswith("П")]
-print("Деталис с названием на 'П':")
-for i in details_on_p:
-    print(i)
-print()
+def main():
+    one_to_many = [(d.name, d.price, p.name) 
+                   for p in providers
+                   for d in details
+                   if d.provider_id == p.id]
+    
+    many_to_many_temp = [(p.name, pd.provider_id, pd.detail_id)
+                         for p in providers
+                         for pd in providers_details
+                         if p.id == pd.provider_id]
+    
+    many_to_many = [(d.name, d.price, provider_name)
+                    for provider_name, provider_id, detail_id in many_to_many_temp
+                    for d in details if d.id == detail_id]
+    
+
+    print('Задание Д1') # детали, название которых заканчивается на "а" + их стоимость + поставщик
+    filtered_details = [(name, price, provider) 
+                       for name, price, provider in one_to_many
+                       if name.endswith("а")]
+    for i in filtered_details:
+        print(i)
+
+    print('\nЗадание Д2') # Список поставщиков со средней стоимостью деталей в каждом отделе, отсортированный по средней стоимости
+    provider_details = {}
+    for name, price, provider_name in one_to_many:
+        if provider_name not in provider_details:
+            provider_details[provider_name] = {"total_price": 0, "num_details": 0}
+        provider_details[provider_name]["total_price"] += price
+        provider_details[provider_name]["num_details"] += 1
+    average_prices = []
+    for provider_name, data in provider_details.items():
+        average_price = data["total_price"] / data["num_details"]
+        average_prices.append((provider_name, average_price))
+    sorted_average_prices = sorted(average_prices, key=lambda x: x[1], reverse=True)
+    for i in sorted_average_prices:
+        print(i)
+    
+    print('\nЗадание Д3')
+    filtered_providers = {}
+    for p in providers:
+        if p.name.startswith("А"):
+            p_details = list(filter(lambda i: i[2]==p.name, many_to_many))
+            p_details_names = [x for x, _, _ in p_details]
+            filtered_providers[p.name] = p_details_names
+    pprint.pprint(filtered_providers)
+
+if __name__ == '__main__':
+    main()
